@@ -1,9 +1,10 @@
 import {useEffect, useState} from "react";
-import { View, Text, StyleSheet, Image, Button, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Image, Button, ActivityIndicator, Alert, Animated, useAnimatedValue } from "react-native";
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import pokeball from '../assets/pokeball.png'; 
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function CapureScreen() {
     const [loading, setLoading] = useState(true);
@@ -15,7 +16,9 @@ export default function CapureScreen() {
     const isFocused = useIsFocused();
     const [user, setUser] = useState(null);
     const [isPokeballThrown, setIsPokeballThrown] = useState(false);
-    const [captureMessage, setCaptureMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false);
+    const pokeballAnimatedValue = new Animated.Value(300);
+    const pokeballAnimatedSize = new Animated.Value(1);
 
     const getUser = async () => {
         try {
@@ -63,13 +66,42 @@ export default function CapureScreen() {
         }
     }
 
+    const displayAlert = (isSuccess, pokemonName) => {
+        const message = isSuccess
+            ? `Vous avez attrapé ${pokemonName}!`
+            : `Vous avez raté ${pokemonName}. Essayez encore!`;
+        Alert.alert(
+            isSuccess ? "Succès!" : "Échec!",
+            message,
+            isSuccess?[{ text: "un autre", onPress: () => getPokemon() }]:[{text: "OK", onPress: () => console.log("ok")},{ text: "un autre", onPress: () => getPokemon() }]
+        );
+    }
+
+    const animatePokeball = () => {
+        pokeballAnimatedValue.setValue(300);
+        
+        Animated.timing(pokeballAnimatedValue, {
+            toValue: -50,
+            duration: 2500,
+            useNativeDriver: true,
+        }).start();
+
+        Animated.timing(pokeballAnimatedSize, {
+            toValue: 4,
+            duration: 2500,
+            useNativeDriver: true,
+        }).start();
+    }
+
     const pokeballCooldown = () => {
         setTimeout(() => {
             setIsPokeballThrown(false);
+            displayAlert(isSuccess, pokemon.name);
         }, 5000);
     }
     useEffect(() => {
         if (isPokeballThrown) {
+            animatePokeball();
             pokeballCooldown();
         }
     }
@@ -81,6 +113,7 @@ export default function CapureScreen() {
         if (catchChance < 0.5) {
             if (!user.pokemonCapturesIdList.some(p => p.id === pokemon.id)) {
                 console.log(`You caught ${pokemon.name}!`);
+                setIsSuccess(true);
                 setUser(prevUser => ({
                     ...prevUser,
                     pokemonCaptures: prevUser.pokemonCaptures + 1,
@@ -98,6 +131,7 @@ export default function CapureScreen() {
             console.log(`You have now captured ${user.pokemonCaptures + 1} Pokemon.`);
         } else {
             console.log(`You missed ${pokemon.name}. Try again!`);
+            setIsSuccess(false);
             setUser(prevUser => ({
                 ...prevUser,
                 pokemonApercus: prevUser.pokemonApercus + 1,
@@ -112,6 +146,8 @@ export default function CapureScreen() {
         }
     }
     , [pokemon.name]);
+
+    useEffect
 
     useEffect(() => {
         if (isFocused) {
@@ -136,37 +172,55 @@ export default function CapureScreen() {
             <>
                 <Image source={{ uri: pokemon.image }} style={{ width: 150, height: 150, marginBottom: 20 }} />
                 <Text style={styles.title}>{pokemon.name}</Text>
+                {!isPokeballThrown && (
                 <Button
                     title="Jeter la Pokéball"
                     onPress={tryToCatchPokemon}
                     color="#841584"
                     disabled={isPokeballThrown}
-                />
+                />)}
 
             </>
         )}
         {isPokeballThrown && (
-            <Image source={pokeball} style={{ width: 100, height: 100, marginTop: 20 }} />
+            <Animated.View style={[
+                    styles.pokeballContainer,
+                    {
+                        transform: [{ translateY: pokeballAnimatedValue }, { scale: pokeballAnimatedSize }],
+                    }
+                ]}>
+                    <Image source={pokeball} style={styles.pokeballImage} />
+                </Animated.View>
         )}
     </View>
   );
 }
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: "bold",
+        marginBottom: 10,
+        textTransform: "capitalize",
+    },
+    description: {
+        fontSize: 16,
+        color: "#666",
+        textAlign: "center",
+        paddingHorizontal: 20,
+        marginTop: 10,
+    },
+    pokeballContainer: {
+        position: 'absolute',
+        alignItems: 'center',
+    },
+    pokeballImage: {
+        width: 100,
+        height: 100,
+    },
 });

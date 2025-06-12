@@ -3,9 +3,19 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import DresseurScreen from './components/DresseurScreen';
-import PokedexScreen from './components/PokedexScreen';
+import PokedexNavigationContainer from './components/PokedexNavigationContainer';
 import CapureScreen from './components/CaptureScreen';
 import pokeball from './assets/pokeball.png';
+import { useIsFocused } from '@react-navigation/native';
+
+function CaptureTabIcon() {
+  const isFocused = useIsFocused();
+  
+  if (!isFocused) {
+    return <Image source={pokeball} style={{ width: 150, height: 150, marginBottom: 40 }} />;
+  }
+  return null;
+}
 
 export default function App() {
   const Tab = createBottomTabNavigator();
@@ -30,11 +40,9 @@ export default function App() {
         <Tab.Screen name="Profil de Dresseur" component={DresseurScreen} />
         <Tab.Screen name="Capture" component={CapureScreen} options={{
           tabBarLabel: '',
-          tabBarIcon: ({ color, size }) => (
-            <Image source={pokeball} style={{ width: 150, height: 150, marginBottom: 40 }} />
-          ),
+          tabBarIcon: () => <CaptureTabIcon />,
         }}/>
-        <Tab.Screen name="Pokedex" component={PokedexScreen} />
+        <Tab.Screen name="Pokedex" component={PokedexNavigationContainer} />
       </Tab.Navigator>
       <StatusBar style={{backgroundColor:'red'}} />
     </NavigationContainer>

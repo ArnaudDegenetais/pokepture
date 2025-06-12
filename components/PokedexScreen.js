@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, FlatList, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from '@react-navigation/native';
 import PokemonCardComponent from "./PokemonCardComponent";
-import PokemonDetailScreen from "./PokemonDetailScreen";
 
 export default function PokedexScreen() {
   const [loading, setLoading] = useState(true);
@@ -48,10 +47,10 @@ export default function PokedexScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Pokedex</Text>
       <FlatList
         data={pokemonList}
         keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
         renderItem={({ item }) => (
           <PokemonCardComponent pokemon={item} />
         )}
