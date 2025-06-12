@@ -1,10 +1,9 @@
 import {useEffect, useState} from "react";
-import { View, Text, StyleSheet, Image, Button, ActivityIndicator, Alert, Animated, useAnimatedValue } from "react-native";
+import { View, Text, StyleSheet, Image, Button, ActivityIndicator, Alert, Animated, useAnimatedValue, Easing } from "react-native";
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import pokeball from '../assets/pokeball.png'; 
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function CapureScreen() {
     const [loading, setLoading] = useState(true);
@@ -19,6 +18,7 @@ export default function CapureScreen() {
     const [isSuccess, setIsSuccess] = useState(false);
     const pokeballAnimatedValue = new Animated.Value(300);
     const pokeballAnimatedSize = new Animated.Value(1);
+    const pokeballAnimatedRotation = new Animated.Value(0);
 
     const getUser = async () => {
         try {
@@ -91,6 +91,27 @@ export default function CapureScreen() {
             duration: 2500,
             useNativeDriver: true,
         }).start();
+
+        Animated.sequence([
+        Animated.delay(2500),
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pokeballAnimatedRotation, {
+                    toValue: 1,
+                    duration: 400,
+                    useNativeDriver: true,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+                Animated.timing(pokeballAnimatedRotation, {
+                    toValue: 0,
+                    duration: 400,
+                    useNativeDriver: true,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+            ]),
+            { iterations: 3 }
+        )
+    ]).start();
     }
 
     const pokeballCooldown = () => {
@@ -186,7 +207,12 @@ export default function CapureScreen() {
             <Animated.View style={[
                     styles.pokeballContainer,
                     {
-                        transform: [{ translateY: pokeballAnimatedValue }, { scale: pokeballAnimatedSize }],
+                        transform: [{ translateY: pokeballAnimatedValue }, { scale: pokeballAnimatedSize },{ 
+                            rotate: pokeballAnimatedRotation.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '35deg']
+                            })
+                        }],
                     }
                 ]}>
                     <Image source={pokeball} style={styles.pokeballImage} />

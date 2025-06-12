@@ -50,7 +50,7 @@ export default function PokedexScreen() {
       <FlatList
         data={pokemonList}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
+        numColumns={3}
         renderItem={({ item }) => (
           <PokemonCardComponent pokemon={item} />
         )}

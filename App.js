@@ -7,6 +7,8 @@ import PokedexNavigationContainer from './components/PokedexNavigationContainer'
 import CapureScreen from './components/CaptureScreen';
 import pokeball from './assets/pokeball.png';
 import { useIsFocused } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 function CaptureTabIcon() {
   const isFocused = useIsFocused();
@@ -37,12 +39,20 @@ export default function App() {
         },
         headerShown: false,
       }}>
-        <Tab.Screen name="Profil de Dresseur" component={DresseurScreen} />
+        <Tab.Screen name="Profil de Dresseur" component={DresseurScreen} options={{
+          tabBarIcon: () => (
+            <AntDesign name="user" size={24}  />
+          ),
+        }}/>
         <Tab.Screen name="Capture" component={CapureScreen} options={{
           tabBarLabel: '',
           tabBarIcon: () => <CaptureTabIcon />,
         }}/>
-        <Tab.Screen name="Pokedex" component={PokedexNavigationContainer} />
+        <Tab.Screen name="Pokedex" component={PokedexNavigationContainer} options={{
+          tabBarIcon: () => (
+            <AntDesign name="book" size={24} />
+          ),
+        }} />
       </Tab.Navigator>
       <StatusBar style={{backgroundColor:'red'}} />
     </NavigationContainer>
